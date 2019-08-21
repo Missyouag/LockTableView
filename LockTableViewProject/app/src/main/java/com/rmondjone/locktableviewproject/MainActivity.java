@@ -1,15 +1,12 @@
 package com.rmondjone.locktableviewproject;
 
 import android.os.Handler;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.RecyclerView;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
 import android.widget.HorizontalScrollView;
 import android.widget.LinearLayout;
-import android.widget.Toast;
 
 import com.rmondjone.locktableview.DisplayUtil;
 import com.rmondjone.locktableview.LockTableView;
@@ -17,7 +14,8 @@ import com.rmondjone.xrecyclerview.ProgressStyle;
 import com.rmondjone.xrecyclerview.XRecyclerView;
 
 import java.util.ArrayList;
-import java.util.List;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 public class MainActivity extends AppCompatActivity {
 

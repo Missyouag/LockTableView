@@ -3,9 +3,6 @@ package com.rmondjone.locktableview;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.text.Layout;
 import android.text.StaticLayout;
 import android.text.TextPaint;
@@ -18,7 +15,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.HorizontalScrollView;
 import android.widget.LinearLayout;
-import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -26,13 +22,12 @@ import android.widget.Toast;
 import com.rmondjone.xrecyclerview.ProgressStyle;
 import com.rmondjone.xrecyclerview.XRecyclerView;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
+
+import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
 
 /**
  * 说明 可锁定首行和首列的表格视图
@@ -52,7 +47,7 @@ public class LockTableView {
     /**
      * 表格数据，每一行为一条数据，从表头计算
      */
-    private ArrayList<ArrayList<String>> mTableDatas = new ArrayList<ArrayList<String>>();
+    private ArrayList<ArrayList<String>> mTableDatas;
     /**
      * 表格视图
      */
@@ -134,7 +129,7 @@ public class LockTableView {
     /**
      * 要改变的列集合
      */
-    private HashMap<Integer, Integer> mChangeColumns = new HashMap<>();
+    private HashMap<Integer, Integer> mChangeColumns;
 
 
     //表格数据
@@ -207,6 +202,7 @@ public class LockTableView {
      * @param mTableDatas  表格数据
      */
     public LockTableView(Context mContext, ViewGroup mContentView, ArrayList<ArrayList<String>> mTableDatas) {
+        mChangeColumns = new HashMap<>();
         this.mContext = mContext;
         this.mContentView = mContentView;
         this.mTableDatas = mTableDatas;
@@ -284,7 +280,7 @@ public class LockTableView {
             //初始化每列最大宽度
             for (int i = 0; i < mTableDatas.size(); i++) {
                 ArrayList<String> rowDatas = mTableDatas.get(i);
-                StringBuffer buffer = new StringBuffer();
+                StringBuilder builder = new StringBuilder();
                 for (int j = 0; j < rowDatas.size(); j++) {
                     TextView textView = new TextView(mContext);
                     textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, mTextViewSize);
@@ -297,17 +293,17 @@ public class LockTableView {
                     textView.setLayoutParams(textViewParams);
                     if (i == 0) {
                         mColumnMaxWidths.add(measureTextWidth(textView, rowDatas.get(j)));
-                        buffer.append("[" + measureTextWidth(textView, rowDatas.get(j)) + "]");
+                        builder.append("[").append(measureTextWidth(textView, rowDatas.get(j))).append("]");
                     } else {
                         int length = mColumnMaxWidths.get(j);
                         int current = measureTextWidth(textView, rowDatas.get(j));
                         if (current > length) {
                             mColumnMaxWidths.set(j, current);
                         }
-                        buffer.append("[" + measureTextWidth(textView, rowDatas.get(j)) + "]");
+                        builder.append("[").append(measureTextWidth(textView, rowDatas.get(j))).append("]");
                     }
                 }
-//                Log.e("第"+i+"行列最大宽度",buffer.toString());
+//                Log.e("第"+i+"行列最大宽度",builder.toString());
             }
             //如果用户指定某列宽度则按照用户指定宽度算
             if (mChangeColumns.size() > 0) {
@@ -321,7 +317,7 @@ public class LockTableView {
             //初始化每行最大高度
             for (int i = 0; i < mTableDatas.size(); i++) {
                 ArrayList<String> rowDatas = mTableDatas.get(i);
-                StringBuffer buffer = new StringBuffer();
+                StringBuilder buffer = new StringBuilder();
 
                 TextView textView = new TextView(mContext);
                 textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, mTextViewSize);
@@ -381,9 +377,7 @@ public class LockTableView {
                         mTableRowDatas.add(rowDatas);
                     }
                 } else {
-                    for (int i = 0; i < mTableDatas.size(); i++) {
-                        mTableRowDatas.add(mTableDatas.get(i));
-                    }
+                    mTableRowDatas.addAll(mTableDatas);
                 }
             }
 //            Log.e("第一行数据", mTableFristData.toString());

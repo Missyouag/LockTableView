@@ -1,7 +1,6 @@
 package com.rmondjone.xrecyclerview;
 
 import android.content.Context;
-import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
 import android.view.Gravity;
 import android.view.View;
@@ -12,6 +11,8 @@ import android.widget.TextView;
 
 import com.rmondjone.xrecyclerview.progressindicator.AVLoadingIndicatorView;
 import com.rmondjone.locktableview.R;
+
+import androidx.recyclerview.widget.RecyclerView;
 
 public class LoadingMoreFooter extends LinearLayout {
 
