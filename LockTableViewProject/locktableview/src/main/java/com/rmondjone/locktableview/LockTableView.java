@@ -1,12 +1,9 @@
 package com.rmondjone.locktableview;
 
 import android.content.Context;
-import android.graphics.Canvas;
-import android.graphics.Color;
 import android.text.Layout;
 import android.text.StaticLayout;
 import android.text.TextPaint;
-import android.text.method.NumberKeyListener;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -113,19 +110,30 @@ public class LockTableView {
     /**
      * Item点击事件
      */
-    private OnItemClickListenter mOnItemClickListenter;
+    private OnItemClickListener mOnItemClickListener;
     /**
      * Item长按事件
      */
-    private OnItemLongClickListenter mOnItemLongClickListenter;
+    private OnItemLongClickListener mOnItemLongClickListener;
+
+
+
+    /**
+     * 表格点击事件
+     */
+    private OnTableClickListener mOnTableClickListener;
     /**
      * Item选中样式
      */
     private int mOnItemSeletor;
     /**
      * 单元格内边距
+     * int left, int top, int right, int bottom
      */
-    private int mCellPadding;
+    private int mCellPaddingLeft;
+    private int mCellPaddingTop;
+    private int mCellPaddingRight;
+    private int mCellPaddingBottom;
     /**
      * 要改变的列集合
      */
@@ -223,7 +231,7 @@ public class LockTableView {
         mTableContentTextColor = R.color.border_color;
         mFristRowBackGroudColor = R.color.table_head;
         mTextViewSize = 16;
-        mCellPadding=DisplayUtil.dip2px(mContext,45);
+        setCellPadding(45);
     }
 
     /**
@@ -289,7 +297,7 @@ public class LockTableView {
                     //设置布局
                     LinearLayout.LayoutParams textViewParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
                             LinearLayout.LayoutParams.WRAP_CONTENT);
-                    textViewParams.setMargins(mCellPadding, mCellPadding, mCellPadding, mCellPadding);//android:layout_margin="15dp"
+                    textViewParams.setMargins(mCellPaddingLeft, mCellPaddingTop, mCellPaddingRight, mCellPaddingBottom);//android:layout_margin="15dp"
                     textView.setLayoutParams(textViewParams);
                     if (i == 0) {
                         mColumnMaxWidths.add(measureTextWidth(textView, rowDatas.get(j)));
@@ -325,7 +333,7 @@ public class LockTableView {
                 //设置布局
                 LinearLayout.LayoutParams textViewParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
                         LinearLayout.LayoutParams.WRAP_CONTENT);
-                textViewParams.setMargins(mCellPadding, mCellPadding, mCellPadding, mCellPadding);//android:layout_margin="15dp"
+                textViewParams.setMargins(mCellPaddingLeft, mCellPaddingTop, mCellPaddingRight, mCellPaddingBottom);//android:layout_margin="15dp"
                 textView.setLayoutParams(textViewParams);
                 int maxHeight = measureTextHeight(textView, rowDatas.get(0));
                 mRowMaxHeights.add(maxHeight);
@@ -421,7 +429,7 @@ public class LockTableView {
             }
         });
         mTableViewAdapter = new TableViewAdapter(mContext, mTableColumnDatas, mTableRowDatas, isLockFristColumn, isLockFristRow);
-        mTableViewAdapter.setCellPadding(mCellPadding);
+        mTableViewAdapter.setCellPadding(mCellPaddingLeft, mCellPaddingTop, mCellPaddingRight, mCellPaddingBottom);
         mTableViewAdapter.setColumnMaxWidths(mColumnMaxWidths);
         mTableViewAdapter.setRowMaxHeights(mRowMaxHeights);
         mTableViewAdapter.setTextViewSize(mTextViewSize);
@@ -434,16 +442,19 @@ public class LockTableView {
                 changeAllScrollView(x, y);
             }
         });
-        if (mOnItemClickListenter != null) {
-            mTableViewAdapter.setOnItemClickListenter(mOnItemClickListenter);
+        if (mOnItemClickListener != null) {
+            mTableViewAdapter.setOnItemClickListener(mOnItemClickListener);
         }
-        if (mOnItemLongClickListenter != null) {
-            mTableViewAdapter.setOnItemLongClickListenter(mOnItemLongClickListenter);
+        if (mOnItemLongClickListener != null) {
+            mTableViewAdapter.setOnItemLongClickListener(mOnItemLongClickListener);
+        }
+        if (mOnTableClickListener != null) {
+            mTableViewAdapter.setOnTableClickListener(mOnTableClickListener);
         }
         if (mOnItemSeletor != 0) {
-            mTableViewAdapter.setOnItemSeletor(mOnItemSeletor);
+            mTableViewAdapter.setOnItemSelector(mOnItemSeletor);
         } else {
-            mTableViewAdapter.setOnItemSeletor(R.color.dashline_color);
+            mTableViewAdapter.setOnItemSelector(R.color.dashline_color);
         }
         mTableViewAdapter.setTableViewRangeListener(new OnTableViewRangeListener() {
             @Override
@@ -496,7 +507,7 @@ public class LockTableView {
             LinearLayout.LayoutParams layoutParams = (LinearLayout.LayoutParams) mColumnTitleView.getLayoutParams();
             layoutParams.width = DisplayUtil.dip2px(mContext, mColumnMaxWidths.get(0));
             layoutParams.height = DisplayUtil.dip2px(mContext, mRowMaxHeights.get(0));
-            layoutParams.setMargins(mCellPadding, mCellPadding, mCellPadding, mCellPadding);
+            layoutParams.setMargins(mCellPaddingLeft, mCellPaddingTop, mCellPaddingRight, mCellPaddingBottom);
             mColumnTitleView.setLayoutParams(layoutParams);
             //构造滚动视图
             createScollview(mLockScrollView, mTableFristData, true);
@@ -623,7 +634,8 @@ public class LockTableView {
         if (textView != null) {
             int width = measureTextWidth(textView, text);
             TextPaint textPaint = textView.getPaint();
-            StaticLayout staticLayout = new StaticLayout(text, textPaint, DisplayUtil.dip2px(mContext, width), Layout.Alignment.ALIGN_NORMAL, 1, 0, false);
+            StaticLayout staticLayout = new StaticLayout(text, textPaint, DisplayUtil.dip2px(mContext, width), Layout.Alignment.ALIGN_NORMAL, 1, 0,
+                    false);
             int height = DisplayUtil.px2dip(mContext, staticLayout.getHeight());
             return height;
         }
@@ -643,7 +655,8 @@ public class LockTableView {
     private int getTextViewHeight(TextView textView, String text, int width) {
         if (textView != null) {
             TextPaint textPaint = textView.getPaint();
-            StaticLayout staticLayout = new StaticLayout(text, textPaint, DisplayUtil.dip2px(mContext, width), Layout.Alignment.ALIGN_NORMAL, 1, 0, false);
+            StaticLayout staticLayout = new StaticLayout(text, textPaint, DisplayUtil.dip2px(mContext, width), Layout.Alignment.ALIGN_NORMAL, 1, 0,
+                    false);
             int height = DisplayUtil.px2dip(mContext, staticLayout.getHeight());
             return height;
         }
@@ -695,7 +708,7 @@ public class LockTableView {
             //设置布局
             LinearLayout.LayoutParams textViewParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
                     LinearLayout.LayoutParams.WRAP_CONTENT);
-            textViewParams.setMargins(mCellPadding, mCellPadding, mCellPadding, mCellPadding);
+            textViewParams.setMargins(mCellPaddingLeft, mCellPaddingTop, mCellPaddingRight, mCellPaddingBottom);
             textView.setLayoutParams(textViewParams);
             ViewGroup.LayoutParams textViewParamsCopy = textView.getLayoutParams();
             if (isLockFristColumn) {
@@ -811,23 +824,39 @@ public class LockTableView {
         return this;
     }
 
-    public LockTableView setOnItemClickListenter(OnItemClickListenter mOnItemClickListenter) {
-        this.mOnItemClickListenter = mOnItemClickListenter;
+    public LockTableView setOnItemClickListener(OnItemClickListener mOnItemClickListenter) {
+        this.mOnItemClickListener = mOnItemClickListenter;
         return this;
     }
 
-    public LockTableView setOnItemLongClickListenter(OnItemLongClickListenter mOnItemLongClickListenter) {
-        this.mOnItemLongClickListenter = mOnItemLongClickListenter;
+    public LockTableView setOnItemLongClickListener(OnItemLongClickListener onItemLongClickListener) {
+        this.mOnItemLongClickListener = onItemLongClickListener;
         return this;
     }
 
-    public LockTableView setOnItemSeletor(int mOnItemSeletor) {
+    public LockTableView setOnItemSelector(int mOnItemSeletor) {
         this.mOnItemSeletor = mOnItemSeletor;
+        return this;
+    }
+    public OnTableClickListener getOnTableClickListener() {
+        return mOnTableClickListener;
+    }
+
+    public LockTableView setOnTableClickListener(OnTableClickListener onTableClickListener) {
+        this.mOnTableClickListener = onTableClickListener;
         return this;
     }
 
     public LockTableView setCellPadding(int mCellPadding) {
-        this.mCellPadding = DisplayUtil.dip2px(mContext,mCellPadding);
+        mCellPaddingLeft = mCellPaddingTop = mCellPaddingRight = mCellPaddingBottom = DisplayUtil.dip2px(mContext, mCellPadding);
+        return this;
+    }
+
+    public LockTableView setCellPadding(int left, int top, int right, int bottom) {
+        mCellPaddingLeft = DisplayUtil.dip2px(mContext, left);
+        mCellPaddingTop = DisplayUtil.dip2px(mContext, top);
+        mCellPaddingRight = DisplayUtil.dip2px(mContext, right);
+        mCellPaddingBottom = DisplayUtil.dip2px(mContext, bottom);
         return this;
     }
 
@@ -956,17 +985,29 @@ public class LockTableView {
         void onLoadMore(XRecyclerView mXRecyclerView, ArrayList<ArrayList<String>> mTableDatas);
     }
 
+    /**
+     * 列表位置点击类
+     * 创建时间 2019/8/21 下午5:42
+     */
+    public interface OnTableClickListener {
 
+        /**
+         * @param item        点击项
+         * @param rowIndex    点击行位置
+         * @param columnIndex 点击列位置
+         */
+        void onItemClick(View item, int rowIndex, int columnIndex);
+    }
     /**
      * 说明 Item点击事件
      * 作者 郭翰林
      * 创建时间 2018/2/2 下午4:50
      */
-    public interface OnItemClickListenter {
+    public interface OnItemClickListener {
 
         /**
-         * @param item     点击项
-         * @param position 点击位置
+         * @param item        点击项
+         * @param position    点击行位置
          */
         void onItemClick(View item, int position);
     }
@@ -976,11 +1017,11 @@ public class LockTableView {
      * 作者 郭翰林
      * 创建时间 2018/2/2 下午4:50
      */
-    public interface OnItemLongClickListenter {
+    public interface OnItemLongClickListener {
 
         /**
-         * @param item     点击项
-         * @param position 点击位置
+         * @param item        点击项
+         * @param position    点击行位置
          */
         void onItemLongClick(View item, int position);
     }

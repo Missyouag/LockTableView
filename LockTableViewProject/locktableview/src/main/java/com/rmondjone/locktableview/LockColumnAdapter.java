@@ -1,12 +1,10 @@
 package com.rmondjone.locktableview;
 
 import android.content.Context;
-import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
-import android.widget.NumberPicker;
 import android.widget.TextView;
 
 import java.util.ArrayList;
@@ -61,22 +59,24 @@ public class LockColumnAdapter extends RecyclerView.Adapter<LockColumnAdapter.Lo
     /**
      * 单元格内边距
      */
-    private int mCellPadding;
-
+    private int mCellPaddingLeft;
+    private int mCellPaddingTop;
+    private int mCellPaddingRight;
+    private int mCellPaddingBottom;
     /**
      * Item点击事件
      */
-    private LockTableView.OnItemClickListenter mOnItemClickListenter;
+    private LockTableView.OnItemClickListener mOnItemClickListenter;
 
     /**
      * Item长按事件
      */
-    private LockTableView.OnItemLongClickListenter mOnItemLongClickListenter;
+    private LockTableView.OnItemLongClickListener mOnItemLongClickListener;
 
     /**
      * Item项被选中监听(处理被选中的效果)
      */
-    private TableViewAdapter.OnItemSelectedListenter mOnItemSelectedListenter;
+    private TableViewAdapter.OnItemSelectedListener mOnItemSelectedListener;
 
 
     public LockColumnAdapter(Context mContext, ArrayList<String> mLockColumnDatas) {
@@ -103,7 +103,7 @@ public class LockColumnAdapter extends RecyclerView.Adapter<LockColumnAdapter.Lo
         } else {
             layoutParams.height = DisplayUtil.dip2px(mContext, mRowMaxHeights.get(position));
         }
-        layoutParams.setMargins(mCellPadding, mCellPadding, mCellPadding, mCellPadding);
+        layoutParams.setMargins(mCellPaddingLeft, mCellPaddingTop, mCellPaddingRight, mCellPaddingBottom);
         holder.mTextView.setLayoutParams(layoutParams);
         //设置颜色
         if (!isLockFristRow) {
@@ -121,8 +121,8 @@ public class LockColumnAdapter extends RecyclerView.Adapter<LockColumnAdapter.Lo
             holder.mLinearLayout.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    if(mOnItemSelectedListenter!=null){
-                        mOnItemSelectedListenter.onItemSelected(v,position);
+                    if(mOnItemSelectedListener !=null){
+                        mOnItemSelectedListener.onItemSelected(v,position);
                     }
                     if(isLockFristRow){
                         mOnItemClickListenter.onItemClick(v,position+1);
@@ -134,18 +134,18 @@ public class LockColumnAdapter extends RecyclerView.Adapter<LockColumnAdapter.Lo
                 }
             });
         }
-        if(mOnItemLongClickListenter!=null){
+        if(mOnItemLongClickListener !=null){
             holder.mLinearLayout.setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
                 public boolean onLongClick(View v) {
-                    if(mOnItemSelectedListenter!=null){
-                        mOnItemSelectedListenter.onItemSelected(v,position);
+                    if(mOnItemSelectedListener !=null){
+                        mOnItemSelectedListener.onItemSelected(v,position);
                     }
                     if (isLockFristRow){
-                        mOnItemLongClickListenter.onItemLongClick(v,position+1);
+                        mOnItemLongClickListener.onItemLongClick(v,position+1);
                     }else{
                         if(position!=0){
-                            mOnItemLongClickListenter.onItemLongClick(v,position);
+                            mOnItemLongClickListener.onItemLongClick(v,position);
                         }
                     }
                     return true;
@@ -153,20 +153,20 @@ public class LockColumnAdapter extends RecyclerView.Adapter<LockColumnAdapter.Lo
             });
         }
         //如果没有设置点击事件和长按事件
-        if(mOnItemClickListenter==null&&mOnItemLongClickListenter==null){
+        if(mOnItemClickListenter==null&& mOnItemLongClickListener ==null){
             holder.mLinearLayout.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    if(mOnItemSelectedListenter!=null){
-                        mOnItemSelectedListenter.onItemSelected(v,position);
+                    if(mOnItemSelectedListener !=null){
+                        mOnItemSelectedListener.onItemSelected(v,position);
                     }
                 }
             });
             holder.mLinearLayout.setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
                 public boolean onLongClick(View v) {
-                    if(mOnItemSelectedListenter!=null){
-                        mOnItemSelectedListenter.onItemSelected(v,position);
+                    if(mOnItemSelectedListener !=null){
+                        mOnItemSelectedListener.onItemSelected(v,position);
                     }
                     return true;
                 }
@@ -213,8 +213,11 @@ public class LockColumnAdapter extends RecyclerView.Adapter<LockColumnAdapter.Lo
         isLockFristRow = lockFristRow;
     }
 
-    public void setCellPadding(int mCellPadding) {
-        this.mCellPadding = mCellPadding;
+    public void setCellPadding(int left, int top, int right, int bottom) {
+        mCellPaddingLeft = left;
+        mCellPaddingTop =  top ;
+        mCellPaddingRight =  right ;
+        mCellPaddingBottom =  bottom ;
     }
 
     public void setFristRowBackGroudColor(int mFristRowBackGroudColor) {
@@ -229,15 +232,15 @@ public class LockColumnAdapter extends RecyclerView.Adapter<LockColumnAdapter.Lo
         this.mTableContentTextColor = mTableContentTextColor;
     }
 
-    public void setOnItemClickListenter(LockTableView.OnItemClickListenter mOnItemClickListenter) {
-        this.mOnItemClickListenter = mOnItemClickListenter;
+    public void setOnItemClickListener(LockTableView.OnItemClickListener onItemClickListener) {
+        this.mOnItemClickListenter = onItemClickListener;
     }
 
-    public void setOnItemLongClickListenter(LockTableView.OnItemLongClickListenter mOnItemLongClickListenter) {
-        this.mOnItemLongClickListenter = mOnItemLongClickListenter;
+    public void setOnItemLongClickListener(LockTableView.OnItemLongClickListener itemLongClickListener) {
+        this.mOnItemLongClickListener = itemLongClickListener;
     }
 
-    public void setOnItemSelectedListenter(TableViewAdapter.OnItemSelectedListenter mOnItemSelectedListenter) {
-        this.mOnItemSelectedListenter = mOnItemSelectedListenter;
+    public void setOnItemSelectedListener(TableViewAdapter.OnItemSelectedListener onItemSelectedListener) {
+        this.mOnItemSelectedListener = onItemSelectedListener;
     }
 }

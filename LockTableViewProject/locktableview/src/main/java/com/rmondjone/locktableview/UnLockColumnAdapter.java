@@ -10,7 +10,6 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
@@ -57,31 +56,38 @@ public class UnLockColumnAdapter extends RecyclerView.Adapter<UnLockColumnAdapte
     /**
      * 是否锁定首行
      */
-    private boolean isLockFristRow = true;
+    private boolean isLockFirstRow = true;
     /**
      * 是否锁定首列
      */
-    private boolean isLockFristColumn = true;
+    private boolean isLockFirstColumn = true;
 
     /**
      * 单元格内边距
      */
-    private int mCellPadding;
+    private int mCellPaddingLeft;
+    private int mCellPaddingTop;
+    private int mCellPaddingRight;
+    private int mCellPaddingBottom;
 
+    /**
+     * 表格内容点击类
+     */
+    private LockTableView.OnTableClickListener mOnTableClickListener;
     /**
      * Item点击事件
      */
-    private LockTableView.OnItemClickListenter mOnItemClickListenter;
+    private LockTableView.OnItemClickListener mOnItemClickListener;
 
     /**
      * Item长按事件
      */
-    private LockTableView.OnItemLongClickListenter mOnItemLongClickListenter;
+    private LockTableView.OnItemLongClickListener mOnItemLongClickListener;
 
     /**
      * Item项被选中监听(处理被选中的效果)
      */
-    private TableViewAdapter.OnItemSelectedListenter mOnItemSelectedListenter;
+    private TableViewAdapter.OnItemSelectedListener mOnItemSelectedListener;
 
     /**
      * 构造方法
@@ -108,48 +114,46 @@ public class UnLockColumnAdapter extends RecyclerView.Adapter<UnLockColumnAdapte
 
     @Override
     public void onBindViewHolder(UnLockViewHolder holder, final int position) {
-        ArrayList<String> datas = mTableDatas.get(position);
-        if (isLockFristRow) {
+        if (isLockFirstRow) {
             //第一行是锁定的
-            createRowView(holder.mLinearLayout, datas, false, mRowMaxHeights.get(position + 1));
+            createRowView(holder.mLinearLayout, position, false, mRowMaxHeights.get(position + 1));
         } else {
             if (position == 0) {
                 holder.mLinearLayout.setBackgroundColor(ContextCompat.getColor(mContext, mFristRowBackGroudColor));
-                createRowView(holder.mLinearLayout, datas, true, mRowMaxHeights.get(position));
-            } else {
-                createRowView(holder.mLinearLayout, datas, false, mRowMaxHeights.get(position));
+//                createRowView(holder.mLinearLayout, position, true, mRowMaxHeights.get(position));
             }
+            createRowView(holder.mLinearLayout, position, position == 0, mRowMaxHeights.get(position));
         }
         //添加事件
-        if(mOnItemClickListenter!=null){
+        if (mOnItemClickListener != null) {
             holder.mLinearLayout.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    if(mOnItemSelectedListenter!=null){
-                        mOnItemSelectedListenter.onItemSelected(v,position);
+                    if (mOnItemSelectedListener != null) {
+                        mOnItemSelectedListener.onItemSelected(v, position);
                     }
-                    if(isLockFristRow){
-                        mOnItemClickListenter.onItemClick(v,position+1);
-                    }else{
-                        if(position!=0){
-                            mOnItemClickListenter.onItemClick(v,position);
+                    if (isLockFirstRow) {
+                        mOnItemClickListener.onItemClick(v, position + 1);
+                    } else {
+                        if (position != 0) {
+                            mOnItemClickListener.onItemClick(v, position);
                         }
                     }
                 }
             });
         }
-        if(mOnItemLongClickListenter!=null){
+        if (mOnItemLongClickListener != null) {
             holder.mLinearLayout.setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
                 public boolean onLongClick(View v) {
-                    if(mOnItemSelectedListenter!=null){
-                        mOnItemSelectedListenter.onItemSelected(v,position);
+                    if (mOnItemSelectedListener != null) {
+                        mOnItemSelectedListener.onItemSelected(v, position);
                     }
-                    if (isLockFristRow){
-                        mOnItemLongClickListenter.onItemLongClick(v,position+1);
-                    }else{
-                        if(position!=0){
-                            mOnItemLongClickListenter.onItemLongClick(v,position);
+                    if (isLockFirstRow) {
+                        mOnItemLongClickListener.onItemLongClick(v, position + 1);
+                    } else {
+                        if (position != 0) {
+                            mOnItemLongClickListener.onItemLongClick(v, position);
                         }
                     }
                     return true;
@@ -157,20 +161,20 @@ public class UnLockColumnAdapter extends RecyclerView.Adapter<UnLockColumnAdapte
             });
         }
         //如果没有设置点击事件和长按事件
-        if(mOnItemClickListenter==null&&mOnItemLongClickListenter==null){
+        if (mOnItemClickListener == null && mOnItemLongClickListener == null && mOnTableClickListener == null) {
             holder.mLinearLayout.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    if(mOnItemSelectedListenter!=null){
-                        mOnItemSelectedListenter.onItemSelected(v,position);
+                    if (mOnItemSelectedListener != null) {
+                        mOnItemSelectedListener.onItemSelected(v, position);
                     }
                 }
             });
             holder.mLinearLayout.setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
                 public boolean onLongClick(View v) {
-                    if(mOnItemSelectedListenter!=null){
-                        mOnItemSelectedListenter.onItemSelected(v,position);
+                    if (mOnItemSelectedListener != null) {
+                        mOnItemSelectedListener.onItemSelected(v, position);
                     }
                     return true;
                 }
@@ -197,8 +201,8 @@ public class UnLockColumnAdapter extends RecyclerView.Adapter<UnLockColumnAdapte
         this.mTextViewSize = mTextViewSize;
     }
 
-    public void setLockFristRow(boolean lockFristRow) {
-        isLockFristRow = lockFristRow;
+    public void setLockFirstRow(boolean lockFirstRow) {
+        isLockFirstRow = lockFirstRow;
     }
 
     public void setFristRowBackGroudColor(int mFristRowBackGroudColor) {
@@ -213,24 +217,40 @@ public class UnLockColumnAdapter extends RecyclerView.Adapter<UnLockColumnAdapte
         this.mTableContentTextColor = mTableContentTextColor;
     }
 
-    public void setLockFristColumn(boolean lockFristColumn) {
-        isLockFristColumn = lockFristColumn;
+    public void setLockFirstColumn(boolean lockFirstColumn) {
+        isLockFirstColumn = lockFirstColumn;
     }
 
-    public void setOnItemClickListenter(LockTableView.OnItemClickListenter mOnItemClickListenter) {
-        this.mOnItemClickListenter = mOnItemClickListenter;
+    public void setOnItemClickListener(LockTableView.OnItemClickListener mOnItemClickListener) {
+        this.mOnItemClickListener = mOnItemClickListener;
     }
 
-    public void setOnItemLongClickListenter(LockTableView.OnItemLongClickListenter mOnItemLongClickListenter) {
-        this.mOnItemLongClickListenter = mOnItemLongClickListenter;
+    public void setOnItemLongClickListener(LockTableView.OnItemLongClickListener itemLongClickListener) {
+        this.mOnItemLongClickListener = itemLongClickListener;
     }
 
-    public void setOnItemSelectedListenter(TableViewAdapter.OnItemSelectedListenter mOnItemSelectedListenter) {
-        this.mOnItemSelectedListenter = mOnItemSelectedListenter;
+    public void setOnItemSelectedListener(TableViewAdapter.OnItemSelectedListener onItemSelectedListener) {
+        this.mOnItemSelectedListener = onItemSelectedListener;
     }
 
-    public void setCellPadding(int mCellPadding) {
-        this.mCellPadding = mCellPadding;
+    public void setCellPadding(int left, int top, int right, int bottom) {
+        mCellPaddingLeft = left;
+        mCellPaddingTop = top;
+        mCellPaddingRight = right;
+        mCellPaddingBottom = bottom;
+    }
+
+    public LockTableView.OnTableClickListener getOnTableClickListener() {
+        return mOnTableClickListener;
+    }
+
+    /**
+     * 注意和其他冲突
+     *
+     * @param onTableClickListener
+     */
+    public void setOnTableClickListener(LockTableView.OnTableClickListener onTableClickListener) {
+        this.mOnTableClickListener = onTableClickListener;
     }
 
     class UnLockViewHolder extends RecyclerView.ViewHolder {
@@ -246,16 +266,17 @@ public class UnLockColumnAdapter extends RecyclerView.Adapter<UnLockColumnAdapte
      * 构造每行数据视图
      *
      * @param linearLayout
-     * @param datas
-     * @param isFristRow   是否是第一行
+     * @param position
+     * @param isFirstRow   是否是第一行
      */
-    private void createRowView(LinearLayout linearLayout, List<String> datas, boolean isFristRow, int mMaxHeight) {
+    private void createRowView(LinearLayout linearLayout, final int position, boolean isFirstRow, int mMaxHeight) {
+        ArrayList<String> datas = mTableDatas.get(position);
         //设置LinearLayout
         linearLayout.removeAllViews();//首先清空LinearLayout,复用会造成重复绘制，使内容超出预期长度
         for (int i = 0; i < datas.size(); i++) {
             //构造单元格
             TextView textView = new TextView(mContext);
-            if (isFristRow) {
+            if (isFirstRow) {
                 textView.setTextColor(ContextCompat.getColor(mContext, mTableHeadTextColor));
             } else {
                 textView.setTextColor(ContextCompat.getColor(mContext, mTableContentTextColor));
@@ -266,22 +287,31 @@ public class UnLockColumnAdapter extends RecyclerView.Adapter<UnLockColumnAdapte
             //设置布局
             LinearLayout.LayoutParams textViewParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
                     LinearLayout.LayoutParams.WRAP_CONTENT);
-            textViewParams.setMargins(mCellPadding, mCellPadding, mCellPadding, mCellPadding);
+            textViewParams.setMargins(mCellPaddingLeft, mCellPaddingTop, mCellPaddingRight, mCellPaddingBottom);
             textViewParams.height = DisplayUtil.dip2px(mContext, mMaxHeight);
-            if (isLockFristColumn) {
-                textViewParams.width = DisplayUtil.dip2px(mContext, mColumnMaxWidths.get(i+1));
+            if (isLockFirstColumn) {
+                textViewParams.width = DisplayUtil.dip2px(mContext, mColumnMaxWidths.get(i + 1));
             } else {
                 textViewParams.width = DisplayUtil.dip2px(mContext, mColumnMaxWidths.get(i));
             }
             textView.setLayoutParams(textViewParams);
             linearLayout.addView(textView);
+            if (null != mOnTableClickListener) {
+                final int finalI = isLockFirstColumn ? i + 1 : i;
+                textView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        if (null != mOnTableClickListener) mOnTableClickListener.onItemClick(view, position, finalI);
+                    }
+                });
+            }
             //画分隔线
             if (i != datas.size() - 1) {
                 View splitView = new View(mContext);
                 ViewGroup.LayoutParams splitViewParmas = new ViewGroup.LayoutParams(DisplayUtil.dip2px(mContext, 1),
                         ViewGroup.LayoutParams.MATCH_PARENT);
                 splitView.setLayoutParams(splitViewParmas);
-                if (isFristRow) {
+                if (isFirstRow) {
                     splitView.setBackgroundColor(ContextCompat.getColor(mContext, R.color.white));
                 } else {
                     splitView.setBackgroundColor(ContextCompat.getColor(mContext, R.color.light_gray));
