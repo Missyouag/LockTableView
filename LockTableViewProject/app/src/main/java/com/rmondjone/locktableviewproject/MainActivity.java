@@ -46,8 +46,8 @@ public class MainActivity extends AppCompatActivity {
         }
         final LockTableView mLockTableView = new LockTableView(this, mContentView, mTableDatas);
         Log.e("表格加载开始", "当前线程：" + Thread.currentThread());
-        mLockTableView.setLockFristColumn(true) //是否锁定第一列
-                .setLockFristRow(true) //是否锁定第一行
+        mLockTableView.setLockFirstColumn(true) //是否锁定第一列
+                .setLockFirstRow(true) //是否锁定第一行
                 .setMaxColumnWidth(100) //列最大宽度
                 .setMinColumnWidth(60) //列最小宽度
                 .setColumnWidth(1,30) //设置指定列文本宽度
@@ -133,19 +133,19 @@ public class MainActivity extends AppCompatActivity {
                         }, 1000);
                     }
                 })
-                .setOnItemClickListenter(new LockTableView.OnItemClickListenter() {
+                .setOnItemClickListener(new LockTableView.OnItemClickListener() {
                     @Override
                     public void onItemClick(View item, int position) {
                         Log.e("点击事件",position+"");
                     }
                 })
-                .setOnItemLongClickListenter(new LockTableView.OnItemLongClickListenter() {
+                .setOnItemLongClickListener(new LockTableView.OnItemLongClickListener() {
                     @Override
                     public void onItemLongClick(View item, int position) {
                         Log.e("长按事件",position+"");
                     }
                 })
-                .setOnItemSeletor(R.color.dashline_color)//设置Item被选中颜色
+                .setSelectorColorRes(R.color.dashline_color)//设置Item被选中颜色
                 .show(); //显示表格,此方法必须调用
         mLockTableView.getTableScrollView().setPullRefreshEnabled(true);
         mLockTableView.getTableScrollView().setLoadingMoreEnabled(true);

@@ -1,6 +1,7 @@
 package com.rmondjone.locktableview;
 
 import android.content.Context;
+import android.text.TextUtils;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -114,16 +115,11 @@ public class UnLockColumnAdapter extends RecyclerView.Adapter<UnLockColumnAdapte
 
     @Override
     public void onBindViewHolder(UnLockViewHolder holder, final int position) {
-        if (isLockFirstRow) {
-            //第一行是锁定的
-            createRowView(holder.mLinearLayout, position, false, mRowMaxHeights.get(position + 1));
-        } else {
-            if (position == 0) {
-                holder.mLinearLayout.setBackgroundColor(ContextCompat.getColor(mContext, mFristRowBackGroudColor));
-//                createRowView(holder.mLinearLayout, position, true, mRowMaxHeights.get(position));
-            }
-            createRowView(holder.mLinearLayout, position, position == 0, mRowMaxHeights.get(position));
+        boolean showFirstRow = !isLockFirstRow && position == 0;
+        if (showFirstRow) { //第一行显示不一样
+            holder.mLinearLayout.setBackgroundColor(ContextCompat.getColor(mContext, mFristRowBackGroudColor));
         }
+        createRowView(holder.mLinearLayout, position, showFirstRow);
         //添加事件
         if (mOnItemClickListener != null) {
             holder.mLinearLayout.setOnClickListener(new View.OnClickListener() {
@@ -269,8 +265,9 @@ public class UnLockColumnAdapter extends RecyclerView.Adapter<UnLockColumnAdapte
      * @param position
      * @param isFirstRow   是否是第一行
      */
-    private void createRowView(LinearLayout linearLayout, final int position, boolean isFirstRow, int mMaxHeight) {
+    private void createRowView(LinearLayout linearLayout, final int position, boolean isFirstRow) {
         ArrayList<String> datas = mTableDatas.get(position);
+        Integer rowHeight = mRowMaxHeights.get(isLockFirstColumn ? position + 1 : position);
         //设置LinearLayout
         linearLayout.removeAllViews();//首先清空LinearLayout,复用会造成重复绘制，使内容超出预期长度
         for (int i = 0; i < datas.size(); i++) {
@@ -288,29 +285,29 @@ public class UnLockColumnAdapter extends RecyclerView.Adapter<UnLockColumnAdapte
             LinearLayout.LayoutParams textViewParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
                     LinearLayout.LayoutParams.WRAP_CONTENT);
             textViewParams.setMargins(mCellPaddingLeft, mCellPaddingTop, mCellPaddingRight, mCellPaddingBottom);
-            textViewParams.height = DisplayUtil.dip2px(mContext, mMaxHeight);
-            if (isLockFirstColumn) {
-                textViewParams.width = DisplayUtil.dip2px(mContext, mColumnMaxWidths.get(i + 1));
-            } else {
-                textViewParams.width = DisplayUtil.dip2px(mContext, mColumnMaxWidths.get(i));
-            }
+            final int finalI = isLockFirstColumn ? i + 1 : i;
+            textViewParams.height = rowHeight;
+            textViewParams.width = mColumnMaxWidths.get(finalI);
             textView.setLayoutParams(textViewParams);
             linearLayout.addView(textView);
+            textView.setEllipsize(TextUtils.TruncateAt.END);//设置文字过长效果
             if (null != mOnTableClickListener) {
-                final int finalI = isLockFirstColumn ? i + 1 : i;
                 textView.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
                         if (null != mOnTableClickListener) mOnTableClickListener.onItemClick(view, position, finalI);
+                        if (mOnItemSelectedListener != null) {
+                            mOnItemSelectedListener.onItemSelected(view, position);
+                        }
                     }
                 });
             }
             //画分隔线
             if (i != datas.size() - 1) {
                 View splitView = new View(mContext);
-                ViewGroup.LayoutParams splitViewParmas = new ViewGroup.LayoutParams(DisplayUtil.dip2px(mContext, 1),
+                ViewGroup.LayoutParams splitViewParams = new ViewGroup.LayoutParams(DisplayUtil.Px1,
                         ViewGroup.LayoutParams.MATCH_PARENT);
-                splitView.setLayoutParams(splitViewParmas);
+                splitView.setLayoutParams(splitViewParams);
                 if (isFirstRow) {
                     splitView.setBackgroundColor(ContextCompat.getColor(mContext, R.color.white));
                 } else {

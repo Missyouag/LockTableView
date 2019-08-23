@@ -23,8 +23,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import androidx.annotation.ColorInt;
+import androidx.annotation.ColorRes;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
+
+import static com.rmondjone.locktableview.DisplayUtil.initDisplayOpinion;
 
 /**
  * 说明 可锁定首行和首列的表格视图
@@ -52,25 +56,25 @@ public class LockTableView {
     /**
      * 是否锁定首行
      */
-    private boolean isLockFristRow = true;
+    private boolean isLockFirstRow = true;
     /**
      * 是否锁定首列
      */
-    private boolean isLockFristColumn = true;
+    private boolean isLockFirstColumn = true;
     /**
-     * 最大列宽(dp)
+     * 最大列宽(px)
      */
     private int maxColumnWidth;
     /**
-     * 最小列宽(dp)
+     * 最小列宽(px)
      */
     private int minColumnWidth;
     /**
-     * 最大行高(dp)
+     * 最大行高(px)
      */
     private int maxRowHeight;
     /**
-     * 最小行高dp)
+     * 最小行高（px)
      */
     private int minRowHeight;
     /**
@@ -117,7 +121,6 @@ public class LockTableView {
     private OnItemLongClickListener mOnItemLongClickListener;
 
 
-
     /**
      * 表格点击事件
      */
@@ -125,7 +128,7 @@ public class LockTableView {
     /**
      * Item选中样式
      */
-    private int mOnItemSeletor;
+    private int mSelectorColor;
     /**
      * 单元格内边距
      * int left, int top, int right, int bottom
@@ -214,6 +217,7 @@ public class LockTableView {
         this.mContext = mContext;
         this.mContentView = mContentView;
         this.mTableDatas = mTableDatas;
+        initDisplayOpinion(mContext);
         initAttrs();
     }
 
@@ -222,10 +226,10 @@ public class LockTableView {
      */
     private void initAttrs() {
         mTableView = LayoutInflater.from(mContext).inflate(R.layout.locktableview, null);
-        maxColumnWidth = 100;
-        minColumnWidth = 70;
-        minRowHeight = 20;
-        maxRowHeight = 60;
+        setMaxColumnWidth(100);
+        setMinColumnWidth(70);
+        setMinRowHeight(20);
+        setMaxColumnWidth(60);
         mNullableString = "N/A";
         mTableHeadTextColor = R.color.beijin;
         mTableContentTextColor = R.color.border_color;
@@ -288,7 +292,7 @@ public class LockTableView {
             //初始化每列最大宽度
             for (int i = 0; i < mTableDatas.size(); i++) {
                 ArrayList<String> rowDatas = mTableDatas.get(i);
-                StringBuilder builder = new StringBuilder();
+//                StringBuilder builder = new StringBuilder();
                 for (int j = 0; j < rowDatas.size(); j++) {
                     TextView textView = new TextView(mContext);
                     textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, mTextViewSize);
@@ -301,14 +305,14 @@ public class LockTableView {
                     textView.setLayoutParams(textViewParams);
                     if (i == 0) {
                         mColumnMaxWidths.add(measureTextWidth(textView, rowDatas.get(j)));
-                        builder.append("[").append(measureTextWidth(textView, rowDatas.get(j))).append("]");
+//                        builder.append("[").append(measureTextWidth(textView, rowDatas.get(j))).append("]");
                     } else {
                         int length = mColumnMaxWidths.get(j);
                         int current = measureTextWidth(textView, rowDatas.get(j));
                         if (current > length) {
                             mColumnMaxWidths.set(j, current);
                         }
-                        builder.append("[").append(measureTextWidth(textView, rowDatas.get(j))).append("]");
+//                        builder.append("[").append(measureTextWidth(textView, rowDatas.get(j))).append("]");
                     }
                 }
 //                Log.e("第"+i+"行列最大宽度",builder.toString());
@@ -325,7 +329,7 @@ public class LockTableView {
             //初始化每行最大高度
             for (int i = 0; i < mTableDatas.size(); i++) {
                 ArrayList<String> rowDatas = mTableDatas.get(i);
-                StringBuilder buffer = new StringBuilder();
+//                StringBuilder buffer = new StringBuilder();
 
                 TextView textView = new TextView(mContext);
                 textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, mTextViewSize);
@@ -345,7 +349,7 @@ public class LockTableView {
                     } else {
                         currentHeight = measureTextHeight(textView, rowDatas.get(j));
                     }
-                    buffer.append("[" + currentHeight + "]");
+//                    buffer.append("[").append(currentHeight).append("]");
                     if (currentHeight > maxHeight) {
                         mRowMaxHeights.set(i, currentHeight);
                     }
@@ -354,9 +358,9 @@ public class LockTableView {
             }
 //            Log.e("每行最大高度dp:",mRowMaxHeights.toString());
 
-            if (isLockFristRow) {
+            if (isLockFirstRow) {
                 ArrayList<String> fristRowDatas = (ArrayList<String>) mTableDatas.get(0).clone();
-                if (isLockFristColumn) {
+                if (isLockFirstColumn) {
                     //锁定第一列
                     mColumnTitle = fristRowDatas.get(0);
                     fristRowDatas.remove(0);
@@ -375,7 +379,7 @@ public class LockTableView {
                     }
                 }
             } else {
-                if (isLockFristColumn) {
+                if (isLockFirstColumn) {
                     //锁定第一列
                     //构造第一列数据,并且构造表格每行数据
                     for (int i = 0; i < mTableDatas.size(); i++) {
@@ -428,7 +432,7 @@ public class LockTableView {
                 }
             }
         });
-        mTableViewAdapter = new TableViewAdapter(mContext, mTableColumnDatas, mTableRowDatas, isLockFristColumn, isLockFristRow);
+        mTableViewAdapter = new TableViewAdapter(mContext, mTableColumnDatas, mTableRowDatas, isLockFirstColumn, isLockFirstRow);
         mTableViewAdapter.setCellPadding(mCellPaddingLeft, mCellPaddingTop, mCellPaddingRight, mCellPaddingBottom);
         mTableViewAdapter.setColumnMaxWidths(mColumnMaxWidths);
         mTableViewAdapter.setRowMaxHeights(mRowMaxHeights);
@@ -451,8 +455,8 @@ public class LockTableView {
         if (mOnTableClickListener != null) {
             mTableViewAdapter.setOnTableClickListener(mOnTableClickListener);
         }
-        if (mOnItemSeletor != 0) {
-            mTableViewAdapter.setOnItemSelector(mOnItemSeletor);
+        if (mSelectorColor != 0) {
+            mTableViewAdapter.setOnItemSelector(mSelectorColor);
         } else {
             mTableViewAdapter.setOnItemSelector(R.color.dashline_color);
         }
@@ -478,11 +482,10 @@ public class LockTableView {
             }
         });
         mTableScrollView.setAdapter(mTableViewAdapter);
-
         mLockHeadView.setBackgroundColor(ContextCompat.getColor(mContext, mFristRowBackGroudColor));
         mUnLockHeadView.setBackgroundColor(ContextCompat.getColor(mContext, mFristRowBackGroudColor));
-        if (isLockFristRow) {
-            if (isLockFristColumn) {
+        if (isLockFirstRow) {
+            if (isLockFirstColumn) {
                 mLockHeadView.setVisibility(View.VISIBLE);
                 mUnLockHeadView.setVisibility(View.GONE);
             } else {
@@ -500,17 +503,17 @@ public class LockTableView {
      * 创建头部视图
      */
     private void creatHeadView() {
-        if (isLockFristColumn) {
+        if (isLockFirstColumn) {
             mColumnTitleView.setTextColor(ContextCompat.getColor(mContext, mTableHeadTextColor));
             mColumnTitleView.setTextSize(TypedValue.COMPLEX_UNIT_SP, mTextViewSize);
             mColumnTitleView.setText(mColumnTitle);
             LinearLayout.LayoutParams layoutParams = (LinearLayout.LayoutParams) mColumnTitleView.getLayoutParams();
-            layoutParams.width = DisplayUtil.dip2px(mContext, mColumnMaxWidths.get(0));
-            layoutParams.height = DisplayUtil.dip2px(mContext, mRowMaxHeights.get(0));
+            layoutParams.width = mColumnMaxWidths.get(0);
+            layoutParams.height = mRowMaxHeights.get(0);
             layoutParams.setMargins(mCellPaddingLeft, mCellPaddingTop, mCellPaddingRight, mCellPaddingBottom);
             mColumnTitleView.setLayoutParams(layoutParams);
             //构造滚动视图
-            createScollview(mLockScrollView, mTableFristData, true);
+            createScrollview(mLockScrollView, mTableFristData, true);
             mScrollViews.add(mLockScrollView);
             mLockScrollView.setOnScrollChangeListener(new CustomHorizontalScrollView.onScrollChangeListener() {
                 @Override
@@ -533,7 +536,7 @@ public class LockTableView {
                 }
             });
         } else {
-            createScollview(mUnLockScrollView, mTableFristData, true);
+            createScrollview(mUnLockScrollView, mTableFristData, true);
             mScrollViews.add(mUnLockScrollView);
             mUnLockScrollView.setOnScrollChangeListener(new CustomHorizontalScrollView.onScrollChangeListener() {
                 @Override
@@ -587,12 +590,12 @@ public class LockTableView {
     private int measureTextWidth(TextView textView, String text) {
         if (textView != null) {
             LinearLayout.LayoutParams layoutParams = (LinearLayout.LayoutParams) textView.getLayoutParams();
-            int width = DisplayUtil.px2dip(mContext, layoutParams.leftMargin) +
-                    DisplayUtil.px2dip(mContext, layoutParams.rightMargin) +
+            int width = layoutParams.leftMargin +
+                    layoutParams.rightMargin +
                     getTextViewWidth(textView, text);
             if (width <= minColumnWidth) {
                 return minColumnWidth;
-            } else if (width > minColumnWidth && width <= maxColumnWidth) {
+            } else if (width <= maxColumnWidth) {
                 return width;
             } else {
                 return maxColumnWidth;
@@ -610,11 +613,11 @@ public class LockTableView {
      */
     private int measureTextHeight(TextView textView, String text) {
         if (textView != null) {
-            LinearLayout.LayoutParams layoutParams = (LinearLayout.LayoutParams) textView.getLayoutParams();
+//            LinearLayout.LayoutParams layoutParams = (LinearLayout.LayoutParams) textView.getLayoutParams();
             int height = getTextViewHeight(textView, text);
             if (height < minRowHeight) {
                 return minRowHeight;
-            } else if (height > minRowHeight && height < maxRowHeight) {
+            } else if (height < maxRowHeight) {
                 return height;
             } else {
                 return maxRowHeight;
@@ -628,16 +631,12 @@ public class LockTableView {
      *
      * @param textView
      * @param text
-     * @return
+     * @return px
      */
     private int getTextViewHeight(TextView textView, String text) {
         if (textView != null) {
             int width = measureTextWidth(textView, text);
-            TextPaint textPaint = textView.getPaint();
-            StaticLayout staticLayout = new StaticLayout(text, textPaint, DisplayUtil.dip2px(mContext, width), Layout.Alignment.ALIGN_NORMAL, 1, 0,
-                    false);
-            int height = DisplayUtil.px2dip(mContext, staticLayout.getHeight());
-            return height;
+            return getTextViewHeight(textView, text, width);
         }
         return 0;
     }
@@ -655,10 +654,9 @@ public class LockTableView {
     private int getTextViewHeight(TextView textView, String text, int width) {
         if (textView != null) {
             TextPaint textPaint = textView.getPaint();
-            StaticLayout staticLayout = new StaticLayout(text, textPaint, DisplayUtil.dip2px(mContext, width), Layout.Alignment.ALIGN_NORMAL, 1, 0,
+            StaticLayout staticLayout = new StaticLayout(text, textPaint, width, Layout.Alignment.ALIGN_NORMAL, 1, 0,
                     false);
-            int height = DisplayUtil.px2dip(mContext, staticLayout.getHeight());
-            return height;
+            return staticLayout.getHeight();
         }
         return 0;
     }
@@ -673,7 +671,7 @@ public class LockTableView {
     private int getTextViewWidth(TextView view, String text) {
         if (view != null) {
             TextPaint paint = view.getPaint();
-            return DisplayUtil.px2dip(mContext, (int) paint.measureText(text));
+            return (int) paint.measureText(text);
         }
         return 0;
     }
@@ -684,9 +682,9 @@ public class LockTableView {
      *
      * @param scrollView
      * @param datas
-     * @param isFristRow 是否是第一行
+     * @param isFirstRow 是否是第一行
      */
-    private void createScollview(HorizontalScrollView scrollView, List<String> datas, boolean isFristRow) {
+    private void createScrollview(HorizontalScrollView scrollView, List<String> datas, boolean isFirstRow) {
         //设置LinearLayout
         LinearLayout linearLayout = new LinearLayout(mContext);
         LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
@@ -697,7 +695,7 @@ public class LockTableView {
         for (int i = 0; i < datas.size(); i++) {
             //构造单元格
             TextView textView = new TextView(mContext);
-            if (isFristRow) {
+            if (isFirstRow) {
                 textView.setTextColor(ContextCompat.getColor(mContext, mTableHeadTextColor));
             } else {
                 textView.setTextColor(ContextCompat.getColor(mContext, mTableContentTextColor));
@@ -711,19 +709,15 @@ public class LockTableView {
             textViewParams.setMargins(mCellPaddingLeft, mCellPaddingTop, mCellPaddingRight, mCellPaddingBottom);
             textView.setLayoutParams(textViewParams);
             ViewGroup.LayoutParams textViewParamsCopy = textView.getLayoutParams();
-            if (isLockFristColumn) {
-                textViewParamsCopy.width = DisplayUtil.dip2px(mContext, mColumnMaxWidths.get(i + 1));
-            } else {
-                textViewParamsCopy.width = DisplayUtil.dip2px(mContext, mColumnMaxWidths.get(i));
-            }
+            textViewParamsCopy.width = mColumnMaxWidths.get(isLockFirstColumn ? i + 1 : i);
             linearLayout.addView(textView);
             //画分隔线
             if (i != datas.size() - 1) {
                 View splitView = new View(mContext);
-                ViewGroup.LayoutParams splitViewParmas = new ViewGroup.LayoutParams(DisplayUtil.dip2px(mContext, 1),
+                ViewGroup.LayoutParams splitViewParams = new ViewGroup.LayoutParams(DisplayUtil.Px1,
                         ViewGroup.LayoutParams.MATCH_PARENT);
-                splitView.setLayoutParams(splitViewParmas);
-                if (isFristRow) {
+                splitView.setLayoutParams(splitViewParams);
+                if (isFirstRow) {
                     splitView.setBackgroundColor(ContextCompat.getColor(mContext, R.color.white));
                 } else {
                     splitView.setBackgroundColor(ContextCompat.getColor(mContext, R.color.light_gray));
@@ -745,7 +739,7 @@ public class LockTableView {
     private void changeColumnWidth(int mColumnNum, int mColumnWidth) {
         if (mColumnMaxWidths != null && mColumnMaxWidths.size() > 0) {
             if (mColumnNum < mColumnMaxWidths.size() && mColumnNum >= 0) {
-                mColumnMaxWidths.set(mColumnNum, mColumnWidth + DisplayUtil.px2dip(mContext, 15) * 2);
+                mColumnMaxWidths.set(mColumnNum, mColumnWidth + 15 * 2);
             } else {
                 Log.e("LockTableView", "指定列数不存在");
             }
@@ -754,23 +748,23 @@ public class LockTableView {
 
 
     //属性设置
-    public LockTableView setLockFristRow(boolean lockFristRow) {
-        isLockFristRow = lockFristRow;
+    public LockTableView setLockFirstRow(boolean lockFirstRow) {
+        isLockFirstRow = lockFirstRow;
         return this;
     }
 
-    public LockTableView setLockFristColumn(boolean lockFristColumn) {
-        isLockFristColumn = lockFristColumn;
+    public LockTableView setLockFirstColumn(boolean lockFirstColumn) {
+        isLockFirstColumn = lockFirstColumn;
         return this;
     }
 
     public LockTableView setMaxColumnWidth(int maxColumnWidth) {
-        this.maxColumnWidth = maxColumnWidth;
+        this.maxColumnWidth = DisplayUtil.dip2px(mContext, maxColumnWidth);
         return this;
     }
 
     public LockTableView setMinColumnWidth(int minColumnWidth) {
-        this.minColumnWidth = minColumnWidth;
+        this.minColumnWidth = DisplayUtil.dip2px(mContext, minColumnWidth);
         return this;
     }
 
@@ -800,12 +794,12 @@ public class LockTableView {
     }
 
     public LockTableView setMaxRowHeight(int maxRowHeight) {
-        this.maxRowHeight = maxRowHeight;
+        this.maxRowHeight = DisplayUtil.dip2px(mContext, maxRowHeight);
         return this;
     }
 
     public LockTableView setMinRowHeight(int minRowHeight) {
-        this.minRowHeight = minRowHeight;
+        this.minRowHeight = DisplayUtil.dip2px(mContext, minRowHeight);
         return this;
     }
 
@@ -834,10 +828,26 @@ public class LockTableView {
         return this;
     }
 
-    public LockTableView setOnItemSelector(int mOnItemSeletor) {
-        this.mOnItemSeletor = mOnItemSeletor;
+    /**
+     * 设置选中颜色 {@link #show()}函数之前调用
+     *
+     * @param colorRes
+     * @return
+     */
+    public LockTableView setSelectorColorRes(@ColorRes int colorRes) {
+        return setSelectorColor(ContextCompat.getColor(mContext, colorRes));
+    }
+    /**
+     * 设置选中颜色 {@link #show()}函数之前调用
+     *
+     * @param colorInt
+     * @return
+     */
+    public LockTableView setSelectorColor(@ColorInt int colorInt) {
+        this.mSelectorColor = colorInt;
         return this;
     }
+
     public OnTableClickListener getOnTableClickListener() {
         return mOnTableClickListener;
     }
@@ -868,6 +878,7 @@ public class LockTableView {
      * @return
      */
     public LockTableView setColumnWidth(int mColumnNum, int mColumnWidth) {
+        mColumnWidth = DisplayUtil.dip2px(mContext, mColumnWidth);
         //判断是否已经设置过
         if (mChangeColumns.containsKey(mColumnNum)) {
             mChangeColumns.remove(mColumnNum);
@@ -998,6 +1009,7 @@ public class LockTableView {
          */
         void onItemClick(View item, int rowIndex, int columnIndex);
     }
+
     /**
      * 说明 Item点击事件
      * 作者 郭翰林
@@ -1006,8 +1018,8 @@ public class LockTableView {
     public interface OnItemClickListener {
 
         /**
-         * @param item        点击项
-         * @param position    点击行位置
+         * @param item     点击项
+         * @param position 点击行位置
          */
         void onItemClick(View item, int position);
     }
@@ -1020,8 +1032,8 @@ public class LockTableView {
     public interface OnItemLongClickListener {
 
         /**
-         * @param item        点击项
-         * @param position    点击行位置
+         * @param item     点击项
+         * @param position 点击行位置
          */
         void onItemLongClick(View item, int position);
     }

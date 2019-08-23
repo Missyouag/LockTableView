@@ -97,55 +97,47 @@ public class LockColumnAdapter extends RecyclerView.Adapter<LockColumnAdapter.Lo
         holder.mTextView.setText(mLockColumnDatas.get(position));
         holder.mTextView.setTextSize(mTextViewSize);
         LinearLayout.LayoutParams layoutParams = (LinearLayout.LayoutParams) holder.mTextView.getLayoutParams();
-        layoutParams.width = DisplayUtil.dip2px(mContext, mColumnMaxWidths.get(0));
-        if (isLockFristRow) {
-            layoutParams.height = DisplayUtil.dip2px(mContext, mRowMaxHeights.get(position + 1));
-        } else {
-            layoutParams.height = DisplayUtil.dip2px(mContext, mRowMaxHeights.get(position));
-        }
+        layoutParams.width = mColumnMaxWidths.get(0);
+        layoutParams.height = mRowMaxHeights.get(isLockFristRow ? position + 1 : position);
         layoutParams.setMargins(mCellPaddingLeft, mCellPaddingTop, mCellPaddingRight, mCellPaddingBottom);
         holder.mTextView.setLayoutParams(layoutParams);
         //设置颜色
-        if (!isLockFristRow) {
-            if (position == 0) {
-                holder.mLinearLayout.setBackgroundColor(ContextCompat.getColor(mContext, mFristRowBackGroudColor));
-                holder.mTextView.setTextColor(ContextCompat.getColor(mContext, mTableHeadTextColor));
-            } else {
-                holder.mTextView.setTextColor(ContextCompat.getColor(mContext, mTableContentTextColor));
-            }
+        if (!isLockFristRow && position == 0) {
+            holder.mLinearLayout.setBackgroundColor(ContextCompat.getColor(mContext, mFristRowBackGroudColor));
+            holder.mTextView.setTextColor(ContextCompat.getColor(mContext, mTableHeadTextColor));
         } else {
             holder.mTextView.setTextColor(ContextCompat.getColor(mContext, mTableContentTextColor));
         }
         //添加事件
-        if(mOnItemClickListenter!=null){
+        if (mOnItemClickListenter != null) {
             holder.mLinearLayout.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    if(mOnItemSelectedListener !=null){
-                        mOnItemSelectedListener.onItemSelected(v,position);
+                    if (mOnItemSelectedListener != null) {
+                        mOnItemSelectedListener.onItemSelected(v, position);
                     }
-                    if(isLockFristRow){
-                        mOnItemClickListenter.onItemClick(v,position+1);
-                    }else{
-                        if(position!=0){
-                            mOnItemClickListenter.onItemClick(v,position);
+                    if (isLockFristRow) {
+                        mOnItemClickListenter.onItemClick(v, position + 1);
+                    } else {
+                        if (position != 0) {
+                            mOnItemClickListenter.onItemClick(v, position);
                         }
                     }
                 }
             });
         }
-        if(mOnItemLongClickListener !=null){
+        if (mOnItemLongClickListener != null) {
             holder.mLinearLayout.setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
                 public boolean onLongClick(View v) {
-                    if(mOnItemSelectedListener !=null){
-                        mOnItemSelectedListener.onItemSelected(v,position);
+                    if (mOnItemSelectedListener != null) {
+                        mOnItemSelectedListener.onItemSelected(v, position);
                     }
-                    if (isLockFristRow){
-                        mOnItemLongClickListener.onItemLongClick(v,position+1);
-                    }else{
-                        if(position!=0){
-                            mOnItemLongClickListener.onItemLongClick(v,position);
+                    if (isLockFristRow) {
+                        mOnItemLongClickListener.onItemLongClick(v, position + 1);
+                    } else {
+                        if (position != 0) {
+                            mOnItemLongClickListener.onItemLongClick(v, position);
                         }
                     }
                     return true;
@@ -153,20 +145,20 @@ public class LockColumnAdapter extends RecyclerView.Adapter<LockColumnAdapter.Lo
             });
         }
         //如果没有设置点击事件和长按事件
-        if(mOnItemClickListenter==null&& mOnItemLongClickListener ==null){
+        if (mOnItemClickListenter == null && mOnItemLongClickListener == null) {
             holder.mLinearLayout.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    if(mOnItemSelectedListener !=null){
-                        mOnItemSelectedListener.onItemSelected(v,position);
+                    if (mOnItemSelectedListener != null) {
+                        mOnItemSelectedListener.onItemSelected(v, position);
                     }
                 }
             });
             holder.mLinearLayout.setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
                 public boolean onLongClick(View v) {
-                    if(mOnItemSelectedListener !=null){
-                        mOnItemSelectedListener.onItemSelected(v,position);
+                    if (mOnItemSelectedListener != null) {
+                        mOnItemSelectedListener.onItemSelected(v, position);
                     }
                     return true;
                 }
@@ -215,9 +207,9 @@ public class LockColumnAdapter extends RecyclerView.Adapter<LockColumnAdapter.Lo
 
     public void setCellPadding(int left, int top, int right, int bottom) {
         mCellPaddingLeft = left;
-        mCellPaddingTop =  top ;
-        mCellPaddingRight =  right ;
-        mCellPaddingBottom =  bottom ;
+        mCellPaddingTop = top;
+        mCellPaddingRight = right;
+        mCellPaddingBottom = bottom;
     }
 
     public void setFristRowBackGroudColor(int mFristRowBackGroudColor) {
