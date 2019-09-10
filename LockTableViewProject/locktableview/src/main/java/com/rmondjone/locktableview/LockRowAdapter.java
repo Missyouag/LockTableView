@@ -13,12 +13,12 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 /**
- * 说明
+ * 说明 第一列数据
  * 作者 郭翰林
  * 创建时间 2017/9/17.
  */
 
-public class LockColumnAdapter extends RecyclerView.Adapter<LockColumnAdapter.LockViewHolder> {
+public class LockRowAdapter extends RecyclerView.Adapter<LockRowAdapter.LockViewHolder> {
     /**
      * 上下文
      */
@@ -79,7 +79,7 @@ public class LockColumnAdapter extends RecyclerView.Adapter<LockColumnAdapter.Lo
     private TableViewAdapter.OnItemSelectedListener mOnItemSelectedListener;
 
 
-    public LockColumnAdapter(Context mContext, ArrayList<String> mLockColumnDatas) {
+    public LockRowAdapter(Context mContext, ArrayList<String> mLockColumnDatas) {
         this.mContext = mContext;
         this.mLockColumnDatas = mLockColumnDatas;
     }

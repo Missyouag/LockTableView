@@ -254,7 +254,7 @@ public class UnLockColumnAdapter extends RecyclerView.Adapter<UnLockColumnAdapte
 
         public UnLockViewHolder(View itemView) {
             super(itemView);
-            mLinearLayout = (LinearLayout) itemView.findViewById(R.id.unlock_linearlayout);
+            mLinearLayout =  itemView.findViewById(R.id.unlock_linearlayout);
         }
     }
 

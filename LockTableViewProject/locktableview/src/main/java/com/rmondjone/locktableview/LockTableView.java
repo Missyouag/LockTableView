@@ -292,7 +292,7 @@ public class LockTableView {
             //初始化每列最大宽度
             for (int i = 0; i < mTableDatas.size(); i++) {
                 ArrayList<String> rowDatas = mTableDatas.get(i);
-//                StringBuilder builder = new StringBuilder();
+                StringBuilder builder = new StringBuilder();
                 for (int j = 0; j < rowDatas.size(); j++) {
                     TextView textView = new TextView(mContext);
                     textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, mTextViewSize);
@@ -303,19 +303,16 @@ public class LockTableView {
                             LinearLayout.LayoutParams.WRAP_CONTENT);
                     textViewParams.setMargins(mCellPaddingLeft, mCellPaddingTop, mCellPaddingRight, mCellPaddingBottom);//android:layout_margin="15dp"
                     textView.setLayoutParams(textViewParams);
-                    if (i == 0) {
-                        mColumnMaxWidths.add(measureTextWidth(textView, rowDatas.get(j)));
-//                        builder.append("[").append(measureTextWidth(textView, rowDatas.get(j))).append("]");
-                    } else {
-                        int length = mColumnMaxWidths.get(j);
-                        int current = measureTextWidth(textView, rowDatas.get(j));
-                        if (current > length) {
-                            mColumnMaxWidths.set(j, current);
-                        }
-//                        builder.append("[").append(measureTextWidth(textView, rowDatas.get(j))).append("]");
+                    boolean isChange = j < mColumnMaxWidths.size();
+                    int oldWidth = isChange ? mColumnMaxWidths.get(j) : 0;
+                    int current = measureTextWidth(textView, rowDatas.get(j));
+                    if (current > oldWidth) {
+                        if (isChange) mColumnMaxWidths.set(j, current);
+                        else mColumnMaxWidths.add(current);
                     }
+                    builder.append("[").append(measureTextWidth(textView, rowDatas.get(j))).append("]");
                 }
-//                Log.e("第"+i+"行列最大宽度",builder.toString());
+                Log.e("第" + i + "行列最大宽度", builder.toString());
             }
             //如果用户指定某列宽度则按照用户指定宽度算
             if (mChangeColumns.size() > 0) {
@@ -492,7 +489,7 @@ public class LockTableView {
                 mLockHeadView.setVisibility(View.GONE);
                 mUnLockHeadView.setVisibility(View.VISIBLE);
             }
-            creatHeadView();
+            createHeadView();
         } else {
             mLockHeadView.setVisibility(View.GONE);
             mUnLockHeadView.setVisibility(View.GONE);
@@ -500,9 +497,11 @@ public class LockTableView {
     }
 
     /**
-     * 创建头部视图
+     * 创建头部视图 和
+     * 刷新头部视图
      */
-    private void creatHeadView() {
+    private void createHeadView() {
+        CustomHorizontalScrollView horizontalScrollView;
         if (isLockFirstColumn) {
             mColumnTitleView.setTextColor(ContextCompat.getColor(mContext, mTableHeadTextColor));
             mColumnTitleView.setTextSize(TypedValue.COMPLEX_UNIT_SP, mTextViewSize);
@@ -512,54 +511,43 @@ public class LockTableView {
             layoutParams.height = mRowMaxHeights.get(0);
             layoutParams.setMargins(mCellPaddingLeft, mCellPaddingTop, mCellPaddingRight, mCellPaddingBottom);
             mColumnTitleView.setLayoutParams(layoutParams);
-            //构造滚动视图
-            createScrollview(mLockScrollView, mTableFristData, true);
-            mScrollViews.add(mLockScrollView);
-            mLockScrollView.setOnScrollChangeListener(new CustomHorizontalScrollView.onScrollChangeListener() {
-                @Override
-                public void onScrollChanged(HorizontalScrollView scrollView, int x, int y) {
-                    changeAllScrollView(x, y);
-                }
-
-                @Override
-                public void onScrollFarLeft(HorizontalScrollView scrollView) {
-                    if (mTableViewRangeListener != null) {
-                        mTableViewRangeListener.onLeft(scrollView);
-                    }
-                }
-
-                @Override
-                public void onScrollFarRight(HorizontalScrollView scrollView) {
-                    if (mTableViewRangeListener != null) {
-                        mTableViewRangeListener.onRight(scrollView);
-                    }
-                }
-            });
+            horizontalScrollView = mLockScrollView;
         } else {
-            createScrollview(mUnLockScrollView, mTableFristData, true);
-            mScrollViews.add(mUnLockScrollView);
-            mUnLockScrollView.setOnScrollChangeListener(new CustomHorizontalScrollView.onScrollChangeListener() {
-                @Override
-                public void onScrollChanged(HorizontalScrollView scrollView, int x, int y) {
-                    changeAllScrollView(x, y);
-                }
-
-                @Override
-                public void onScrollFarLeft(HorizontalScrollView scrollView) {
-                    if (mTableViewRangeListener != null) {
-                        mTableViewRangeListener.onLeft(scrollView);
-                    }
-                }
-
-                @Override
-                public void onScrollFarRight(HorizontalScrollView scrollView) {
-                    if (mTableViewRangeListener != null) {
-                        mTableViewRangeListener.onRight(scrollView);
-                    }
-                }
-            });
+            horizontalScrollView = mUnLockScrollView;
         }
+        initFirstColumn(horizontalScrollView);
     }
+
+    /**
+     * 初始化第一行数据
+     *
+     * @param horizontalScrollView
+     */
+    private void initFirstColumn(CustomHorizontalScrollView horizontalScrollView) {
+        createScrollview(horizontalScrollView, mTableFristData, true);
+        mScrollViews.add(horizontalScrollView);
+        horizontalScrollView.setOnScrollChangeListener(new CustomHorizontalScrollView.onScrollChangeListener() {
+            @Override
+            public void onScrollChanged(HorizontalScrollView scrollView, int x, int y) {
+                changeAllScrollView(x, y);
+            }
+
+            @Override
+            public void onScrollFarLeft(HorizontalScrollView scrollView) {
+                if (mTableViewRangeListener != null) {
+                    mTableViewRangeListener.onLeft(scrollView);
+                }
+            }
+
+            @Override
+            public void onScrollFarRight(HorizontalScrollView scrollView) {
+                if (mTableViewRangeListener != null) {
+                    mTableViewRangeListener.onRight(scrollView);
+                }
+            }
+        });
+    }
+
 
 
     /**
@@ -593,9 +581,9 @@ public class LockTableView {
             int width = layoutParams.leftMargin +
                     layoutParams.rightMargin +
                     getTextViewWidth(textView, text);
-            if (width <= minColumnWidth) {
+            if (width < minColumnWidth) {
                 return minColumnWidth;
-            } else if (width <= maxColumnWidth) {
+            } else if (width < maxColumnWidth) {
                 return width;
             } else {
                 return maxColumnWidth;
@@ -613,8 +601,8 @@ public class LockTableView {
      */
     private int measureTextHeight(TextView textView, String text) {
         if (textView != null) {
-//            LinearLayout.LayoutParams layoutParams = (LinearLayout.LayoutParams) textView.getLayoutParams();
-            int height = getTextViewHeight(textView, text);
+            LinearLayout.LayoutParams layoutParams = (LinearLayout.LayoutParams) textView.getLayoutParams();
+            int height = getTextViewHeight(textView, text) + layoutParams.topMargin + layoutParams.bottomMargin;
             if (height < minRowHeight) {
                 return minRowHeight;
             } else if (height < maxRowHeight) {
@@ -654,9 +642,10 @@ public class LockTableView {
     private int getTextViewHeight(TextView textView, String text, int width) {
         if (textView != null) {
             TextPaint textPaint = textView.getPaint();
+            LinearLayout.LayoutParams layoutParams = (LinearLayout.LayoutParams) textView.getLayoutParams();
             StaticLayout staticLayout = new StaticLayout(text, textPaint, width, Layout.Alignment.ALIGN_NORMAL, 1, 0,
                     false);
-            return staticLayout.getHeight();
+            return staticLayout.getHeight() + layoutParams.topMargin + layoutParams.bottomMargin;
         }
         return 0;
     }
@@ -685,6 +674,7 @@ public class LockTableView {
      * @param isFirstRow 是否是第一行
      */
     private void createScrollview(HorizontalScrollView scrollView, List<String> datas, boolean isFirstRow) {
+        scrollView.removeAllViews();
         //设置LinearLayout
         LinearLayout linearLayout = new LinearLayout(mContext);
         LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
@@ -706,11 +696,10 @@ public class LockTableView {
             //设置布局
             LinearLayout.LayoutParams textViewParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
                     LinearLayout.LayoutParams.WRAP_CONTENT);
+            textViewParams.width = mColumnMaxWidths.get(isLockFirstColumn ? i + 1 : i);
             textViewParams.setMargins(mCellPaddingLeft, mCellPaddingTop, mCellPaddingRight, mCellPaddingBottom);
-            textView.setLayoutParams(textViewParams);
-            ViewGroup.LayoutParams textViewParamsCopy = textView.getLayoutParams();
-            textViewParamsCopy.width = mColumnMaxWidths.get(isLockFirstColumn ? i + 1 : i);
-            linearLayout.addView(textView);
+//            textView.setLayoutParams(textViewParams);
+            linearLayout.addView(textView, textViewParams);
             //画分隔线
             if (i != datas.size() - 1) {
                 View splitView = new View(mContext);
@@ -736,13 +725,12 @@ public class LockTableView {
      * @param mColumnNum
      * @param mColumnWidth
      */
-    private void changeColumnWidth(int mColumnNum, int mColumnWidth) {
-        if (mColumnMaxWidths != null && mColumnMaxWidths.size() > 0) {
-            if (mColumnNum < mColumnMaxWidths.size() && mColumnNum >= 0) {
-                mColumnMaxWidths.set(mColumnNum, mColumnWidth + 15 * 2);
-            } else {
-                Log.e("LockTableView", "指定列数不存在");
-            }
+    private void changeColumnWidth(int mColumnNum, Integer mColumnWidth) {
+        if (null == mColumnWidth) mColumnWidth = 0;
+        if (mColumnMaxWidths != null && mColumnMaxWidths.size() > 0 && mColumnNum < mColumnMaxWidths.size() && mColumnNum >= 0) {
+            mColumnMaxWidths.set(mColumnNum, mColumnWidth);
+        } else {
+            Log.e("LockTableView", "指定列数不存在");
         }
     }
 
@@ -837,6 +825,7 @@ public class LockTableView {
     public LockTableView setSelectorColorRes(@ColorRes int colorRes) {
         return setSelectorColor(ContextCompat.getColor(mContext, colorRes));
     }
+
     /**
      * 设置选中颜色 {@link #show()}函数之前调用
      *
@@ -927,6 +916,7 @@ public class LockTableView {
         mColumnMaxWidths.clear();
         mRowMaxHeights.clear();
         initData();
+        createHeadView();
         mTableViewAdapter.notifyDataSetChanged();
     }
 

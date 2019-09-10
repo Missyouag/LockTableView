@@ -9,7 +9,6 @@ import android.widget.HorizontalScrollView;
 
 import java.util.ArrayList;
 
-import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -45,7 +44,7 @@ public class TableViewAdapter extends RecyclerView.Adapter<TableViewAdapter.Tabl
     /**
      * 记录每列最大宽度
      */
-    private ArrayList<Integer> mColumnMaxWidths = new ArrayList<Integer>();
+    private ArrayList<Integer> mColumnMaxWidths = new ArrayList<>();
     /**
      * 记录每行最大高度
      */
@@ -122,7 +121,7 @@ public class TableViewAdapter extends RecyclerView.Adapter<TableViewAdapter.Tabl
     /**
      * 锁定视图Adapter
      */
-    private LockColumnAdapter mLockAdapter;
+    private LockRowAdapter mLockAdapter;
 
     /**
      * 未锁定视图Adapter
@@ -165,7 +164,8 @@ public class TableViewAdapter extends RecyclerView.Adapter<TableViewAdapter.Tabl
             //构造锁定视图
             holder.mLockRecyclerView.setVisibility(View.VISIBLE);
             if (mLockAdapter == null) {
-                mLockAdapter = new LockColumnAdapter(mContext, mLockColumnDatas);
+                //锁定第一列数据
+                mLockAdapter = new LockRowAdapter(mContext, mLockColumnDatas);
                 mLockAdapter.setCellPadding(mCellPaddingLeft, mCellPaddingTop, mCellPaddingRight, mCellPaddingBottom);
                 mLockAdapter.setRowMaxHeights(mRowMaxHeights);
                 mLockAdapter.setColumnMaxWidths(mColumnMaxWidths);
